@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cookbook</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"></script>
+<style>
+  :root {
+    --bg: #faf7f2;
+    --sidebar-bg: #f1ece3;
+    --ink: #3a3226;
+    --muted: #8a7f6d;
+    --accent: #b5543b;
+    --accent-soft: #e8d9c9;
+    --border: #ddd3c2;
+    --code-bg: #efe9dd;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    min-height: 100vh;
+  }
+  /* ---------- Sidebar ---------- */
+  #sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  #sidebar h1 {
+    font-size: 1.4rem;
+    margin: 0 0 0.25rem;
+    letter-spacing: 0.02em;
+  }
+  #sidebar h1 a { color: var(--ink); text-decoration: none; }
+  #sidebar .subtitle {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+    font-style: italic;
+  }
+  #nav details { margin: 0.15rem 0; }
+  #nav summary {
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0.25rem 0.4rem;
+    border-radius: 6px;
+    list-style: none;
+    user-select: none;
+  }
+  #nav summary::before { content: "▸ "; color: var(--muted); font-size: 0.75em; }
+  #nav details[open] > summary::before { content: "▾ "; }
+  #nav summary:hover { background: var(--accent-soft); }
+  #nav .children { margin-left: 1rem; border-left: 1px dotted var(--border); padding-left: 0.5rem; }
+  #nav a {
+    display: block;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 0.25rem 0.4rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+  #nav a:hover { background: var(--accent-soft); }
+  #nav a.active { background: var(--accent); color: #fff; }
+  #status { font-size: 0.75rem; color: var(--muted); margin-top: 1.5rem; }
+  /* ---------- Content ---------- */
+  #main { flex: 1; min-width: 0; }
+  #content {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 5rem;
+    line-height: 1.65;
+  }
+  #content h1 {
+    font-size: 2rem;
+    border-bottom: 3px double var(--border);
+    padding-bottom: 0.4rem;
+  }
+  #content h2 { color: var(--accent); margin-top: 2rem; }
+  #content h3 { margin-top: 1.5rem; }
+  #content a { color: var(--accent); }
+  #content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    background: #fff;
+  }
+  #content th, #content td {
+    border: 1px solid var(--border);
+    padding: 0.45rem 0.7rem;
+    text-align: left;
+  }
+  #content th { background: var(--sidebar-bg); }
+  #content code {
+    background: var(--code-bg);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  #content pre { background: var(--code-bg); padding: 1rem; border-radius: 8px; overflow-x: auto; }
+  #content blockquote {
+    border-left: 4px solid var(--accent-soft);
+    margin-left: 0;
+    padding-left: 1rem;
+    color: var(--muted);
+  }
+  #content hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  .crumbs { font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; }
+  .crumbs a { color: var(--muted); }
+  .error { color: var(--accent); }
+  /* ---------- Mobile ---------- */
+  #menu-btn { display: none; }
+  @media (max-width: 720px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; height: auto; position: static; }
+    #menu-btn {
+      display: block;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.3rem 0.6rem;
+      font-family: inherit;
+      cursor: pointer;
+      float: right;
+    }
+    #sidebar.collapsed #nav, #sidebar.collapsed #status { display: none; }
+    #content { padding: 1.5rem 1rem 4rem; }
+  }
+</style>
+</head>
+<body>
+<aside id="sidebar">
+  <button id="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">☰</button>
+  <h1><a href="#/">🍳 Cookbook</a></h1>
+  <div class="subtitle">family recipes, curated with Claude</div>
+  <nav id="nav">Loading…</nav>
+  <div id="status"></div>
+</aside>
+<main id="main"><article id="content"></article></main>
+
+<script>
+/* ================= CONFIG ================= */
+const CONFIG = {
+  owner: "GITHUB_OWNER",     // <- filled in at publish time
+  repo: "GITHUB_REPO",
+  branch: "main",
+  root: "",                  // "" = whole repo; or a subfolder like "recipes"
+  exclude: ["CLAUDE.md", "README.md"],  // meta files hidden from the site
+  cacheMinutes: 5
+};
+/* ========================================== */
+
+const $nav = document.getElementById("nav");
+const $content = document.getElementById("content");
+const $status = document.getElementById("status");
+let fileList = [];   // ["recipes/baking/fudgy_brownies.md", ...]
+
+function pretty(name) {
+  return name.replace(/\.md$/i, "").replace(/[_-]+/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")   // NinjaCreami -> Ninja Creami
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+function inRoot(p) {
+  if (CONFIG.root && !p.startsWith(CONFIG.root + "/")) return false;
+  const base = p.split("/").pop();
+  return p.toLowerCase().endsWith(".md") && !CONFIG.exclude.includes(base);
+}
+function relParts(p) {
+  return (CONFIG.root ? p.slice(CONFIG.root.length + 1) : p).split("/");
+}
+
+async function loadTree() {
+  const cacheKey = `tree:${CONFIG.owner}/${CONFIG.repo}`;
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) {
+    const { t, list } = JSON.parse(cached);
+    if (Date.now() - t < CONFIG.cacheMinutes * 60 * 1000) return list;
+  }
+  let list;
+  try {
+    const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/git/trees/${encodeURIComponent(CONFIG.branch)}?recursive=1`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`GitHub API ${r.status}`);
+    const data = await r.json();
+    list = data.tree
+      .filter(n => n.type === "blob" && inRoot(n.path))
+      .map(n => n.path)
+      .sort();
+  } catch (e) {
+    // Fallback for local preview: a manifest.json listing the md paths
+    const r = await fetch("manifest.json");
+    if (!r.ok) throw e;
+    list = await r.json();
+  }
+  sessionStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), list }));
+  return list;
+}
+
+function buildTree(paths) {
+  const root = {};
+  for (const p of paths) {
+    const parts = relParts(p);
+    let node = root;
+    for (let i = 0; i < parts.length - 1; i++)
+      node = node[parts[i]] = node[parts[i]] || {};
+    (node.__files = node.__files || []).push({ name: parts[parts.length - 1], path: p });
+  }
+  return root;
+}
+
+function renderNav(node, container) {
+  const dirs = Object.keys(node).filter(k => k !== "__files").sort();
+  for (const d of dirs) {
+    const det = document.createElement("details");
+    det.open = true;
+    const sum = document.createElement("summary");
+    sum.textContent = pretty(d);
+    det.appendChild(sum);
+    const kids = document.createElement("div");
+    kids.className = "children";
+    renderNav(node[d], kids);
+    det.appendChild(kids);
+    container.appendChild(det);
+  }
+  for (const f of (node.__files || [])) {
+    const a = document.createElement("a");
+    a.href = "#/" + f.path;
+    a.dataset.path = f.path;
+    a.textContent = pretty(f.name);
+    container.appendChild(a);
+  }
+}
+
+async function fetchMarkdown(path) {
+  try {
+    const url = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/${path}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(r.status);
+    return await r.text();
+  } catch (e) {
+    const r = await fetch(path); // local preview fallback
+    if (!r.ok) throw new Error(`Could not load ${path}`);
+    return await r.text();
+  }
+}
+
+function crumbs(path) {
+  const parts = path.split("/");
+  let html = `<a href="#/">Home</a>`;
+  for (let i = 1; i < parts.length - 1; i++) html += ` › ${pretty(parts[i])}`;
+  html += ` › ${pretty(parts[parts.length - 1])}`;
+  return `<div class="crumbs">${html}</div>`;
+}
+
+async function route() {
+  const hash = decodeURIComponent(location.hash.replace(/^#\//, ""));
+  document.querySelectorAll("#nav a").forEach(a =>
+    a.classList.toggle("active", a.dataset.path === hash));
+  if (!hash) {
+    $content.innerHTML = `
+      <h1>Welcome to the Cookbook</h1>
+      <p>${fileList.length} recipe file${fileList.length === 1 ? "" : "s"} on the shelf.
+      Pick one from the menu${window.innerWidth <= 720 ? " above" : " on the left"}.</p>
+      <p><em>New recipes added to the folder show up here automatically — just refresh.</em></p>`;
+    document.title = "Cookbook";
+    return;
+  }
+  $content.innerHTML = `<p class="crumbs">Loading…</p>`;
+  try {
+    const md = await fetchMarkdown(hash);
+    $content.innerHTML = crumbs(hash) + DOMPurify.sanitize(marked.parse(md));
+    document.title = pretty(hash.split("/").pop()) + " — Cookbook";
+    window.scrollTo(0, 0);
+    document.querySelectorAll("#nav a").forEach(a =>
+      a.classList.toggle("active", a.dataset.path === hash));
+  } catch (e) {
+    $content.innerHTML = `<p class="error">Couldn't load <code>${hash}</code>: ${e.message}</p>`;
+  }
+}
+
+(async function init() {
+  try {
+    fileList = await loadTree();
+    $nav.innerHTML = "";
+    renderNav(buildTree(fileList), $nav);
+    $status.textContent = `${fileList.length} files · ${CONFIG.owner}/${CONFIG.repo}`;
+  } catch (e) {
+    $nav.innerHTML = `<span class="error">Couldn't list recipes: ${e.message}</span>`;
+  }
+  window.addEventListener("hashchange", route);
+  route();
+})();
+</script>
+</body>
+</html>
