@@ -137,6 +137,21 @@
     #sidebar.collapsed #nav, #sidebar.collapsed #status { display: none; }
     #content { padding: 1.5rem 1rem 4rem; }
   }
+  /* ---------- Print: recipe only ---------- */
+  @media print {
+    #sidebar, .crumbs { display: none; }
+    body { background: #fff; display: block; }
+    #main { width: 100%; }
+    #content {
+      max-width: none;
+      padding: 0;
+      line-height: 1.5;
+    }
+    #content h1 { break-after: avoid; }
+    #content h2, #content h3 { break-after: avoid; color: var(--ink); }
+    #content table, #content pre, #content blockquote { break-inside: avoid; }
+    #content a { color: var(--ink); text-decoration: none; }
+  }
 </style>
 </head>
 <body>
