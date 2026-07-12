@@ -171,8 +171,7 @@ const CONFIG = {
   repo: "cookbook",
   branch: "main",
   root: "",                  // "" = whole repo; or a subfolder like "recipes"
-  exclude: ["CLAUDE.md", "README.md", "ninja_creami_preferences.md"],  // meta files hidden from the site
-  cacheMinutes: 5
+  exclude: ["CLAUDE.md", "README.md", "ninja_creami_preferences.md"]  // meta files hidden from the site
 };
 /* ========================================== */
 
@@ -196,12 +195,6 @@ function relParts(p) {
 }
 
 async function loadTree() {
-  const cacheKey = `tree:${CONFIG.owner}/${CONFIG.repo}`;
-  const cached = sessionStorage.getItem(cacheKey);
-  if (cached) {
-    const { t, list } = JSON.parse(cached);
-    if (Date.now() - t < CONFIG.cacheMinutes * 60 * 1000) return list;
-  }
   let list;
   try {
     const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/git/trees/${encodeURIComponent(CONFIG.branch)}?recursive=1`;
@@ -218,7 +211,6 @@ async function loadTree() {
     if (!r.ok) throw e;
     list = await r.json();
   }
-  sessionStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), list }));
   return list;
 }
 
