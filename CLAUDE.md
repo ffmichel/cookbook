@@ -14,7 +14,7 @@ This folder is a recipe cookbook AND a website, published via GitHub Pages.
 1. Add or edit `.md` files in the appropriate category folder (create new folders for new categories).
 2. Filenames: lowercase snake_case, e.g. `chocolate_chip_cookies.md`. The site prettifies them for display.
 3. Each recipe starts with a `# Title` heading; use tables for ingredients (see existing recipes as templates).
-4. Commit and push to publish:
+4. Publishing: the folder is mirrored to https://github.com/ffmichel/cookbook (site: https://ffmichel.github.io/cookbook/). A push token (expires Oct 9, 2026, Contents-RW on that repo only) is in the git-ignored `.github_token` file. Sync the folder to a clone, then commit and push:
    ```
    git add -A && git commit -m "Add <recipe>" && git push
    ```
