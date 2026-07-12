@@ -11,5 +11,5 @@ This folder contains Ninja Creami ice cream recipes and preferences.
 
 ## Files
 
-- `ninja_creami_recipes.md` — all recipes
-- `ninja_creami_preferences.md` — full preferences reference
+- One markdown file per recipe (e.g. `strawberry_sorbet.md`)
+- `ninja_creami_preferences.md` — full preferences reference; NOT a recipe, hidden from the website (listed in the `exclude` config in `/index.html`)

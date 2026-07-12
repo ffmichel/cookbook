@@ -1,8 +1,4 @@
-# Ninja Creami Chocolate Brownie Ice Cream
-
-*Store-bought style ice cream results — no protein powder, no pudding mix.*
-
----
+# Chocolate Brownie Ice Cream
 
 **Yield:** 1 pint
 
@@ -10,17 +6,18 @@
 
 | Ingredient | Amount |
 |---|---|
-| Unsweetened cocoa powder | ⅓ cup (30 g) |
-| Whole milk, warmed | ¼ cup |
-| Sweetened condensed milk | ½ cup |
-| Heavy whipping cream | ½ cup |
-| Vanilla extract | 1 tsp |
+| Unsweetened cocoa powder | 50 g |
+| Whole milk, warmed | 73 g |
+| Sweetened condensed milk | 189 g |
+| Heavy whipping cream | 146 g |
+| Vanilla extract | 5 g |
 | Salt | Pinch |
+| Xanthan gum | 0.5 g |
 
 ### Method
 
 1. Whisk warm milk and cocoa powder into a smooth paste in the pint container.
-2. Add condensed milk, heavy cream, vanilla, and salt. Whisk until combined.
+2. Add condensed milk, heavy cream, vanilla, salt, and xanthan gum. Whisk until combined.
 3. Freeze 15–24 hours without the lid (keeps the top smooth).
 
 ### Spin Settings
