@@ -9,8 +9,8 @@
 | Whole milk | 200 g |
 | Heavy cream | 120 g |
 | Sweetened condensed milk | 85 g |
-| Vanilla extract | 1/2 tsp |
-| Oreo cookies | 4–5 |
+| Vanilla extract | 2 g |
+| Oreo cookies | 50 g |
 | Xanthan gum | 1 g |
 
 ### Method

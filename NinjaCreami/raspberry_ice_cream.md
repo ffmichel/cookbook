@@ -11,8 +11,8 @@
 | Heavy cream | 150 g |
 | Sugar | 55 g |
 | Corn syrup | 15 g |
-| Salt | Pinch |
-| Xanthan gum | 1/16 tsp |
+| Salt | 0.5 g |
+| Xanthan gum | 0.2 g |
 
 ### Method
 

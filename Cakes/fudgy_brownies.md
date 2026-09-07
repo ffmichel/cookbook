@@ -15,7 +15,7 @@
 | White sugar | 454 g |
 | Light brown sugar, packed | 57 g |
 | Diamond Crystal kosher salt | 5 g |
-| Large eggs | 6 |
+| Large eggs | 300 g |
 | Vanilla extract | 13 g |
 | Instant espresso powder (optional) | 3 g |
 

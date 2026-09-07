@@ -116,6 +116,44 @@
     color: var(--muted);
   }
   #content hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  /* ---------- Ingredient scaling ---------- */
+  .scale-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0 -0.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .scale-bar .hint { flex: 1 1 14rem; font-style: italic; }
+  .scale-bar button {
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 0.28rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .scale-bar button:hover { background: var(--accent-soft); }
+  .scale-bar button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .scale-bar button.primary:hover { background: #9d4732; }
+  .scale-bar .factor { font-variant-numeric: tabular-nums; min-width: 3.5rem; text-align: right; }
+  input.amt {
+    width: 5.5rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 0.15rem 0.4rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: #fffdf9;
+    color: var(--ink);
+    text-align: right;
+  }
+  input.amt:focus { border-color: var(--accent); outline: 2px solid var(--accent-soft); }
+  td.amount-cell .unit { color: var(--muted); margin-left: 0.35rem; }
   .crumbs { font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; }
   .crumbs a { color: var(--muted); }
   .error { color: var(--accent); }
@@ -151,6 +189,8 @@
     #content h2, #content h3 { break-after: avoid; color: var(--ink); }
     #content table, #content pre, #content blockquote { break-inside: avoid; }
     #content a { color: var(--ink); text-decoration: none; }
+    .scale-bar { display: none; }
+    input.amt { border: none; background: none; width: auto; padding: 0; text-align: left; }
   }
 </style>
 </head>
@@ -262,6 +302,98 @@ async function fetchMarkdown(path) {
   }
 }
 
+/* ---------- Ingredient scaling ----------
+   Any ingredient table (headers "Ingredient" + "Amount") gets editable gram
+   fields. Change one, press Apply, and every other amount scales by the same
+   ratio. Reset returns the table to the amounts as written. */
+
+function fmtGrams(v) {
+  if (!isFinite(v)) return "";
+  const a = Math.abs(v);
+  const s = a >= 100 ? v.toFixed(0) : a >= 10 ? v.toFixed(1) : v.toFixed(2);
+  return s.includes(".") ? s.replace(/0+$/, "").replace(/\.$/, "") : s;
+}
+
+function enhanceIngredientTable(table) {
+  const heads = [...table.querySelectorAll("th")].map(th => th.textContent.trim().toLowerCase());
+  const amtIdx = heads.indexOf("amount");
+  if (amtIdx === -1 || !heads.some(h => h.startsWith("ingredient"))) return;
+
+  const inputs = [];
+  for (const tr of table.querySelectorAll("tbody tr")) {
+    const cell = tr.cells[amtIdx];
+    if (!cell) continue;
+    const m = cell.textContent.trim().match(/^(\d+(?:[.,]\d+)?)\s*g$/i);
+    if (!m) continue;                       // non-gram rows are left untouched
+    const base = parseFloat(m[1].replace(",", "."));
+    if (!(base > 0)) continue;
+
+    cell.classList.add("amount-cell");
+    cell.textContent = "";
+    const input = document.createElement("input");
+    input.type = "number";
+    input.step = "any";
+    input.min = "0";
+    input.className = "amt";
+    input.dataset.base = base;
+    input.value = fmtGrams(base);
+    input.setAttribute("aria-label", (tr.cells[0] ? tr.cells[0].textContent.trim() : "") + " in grams");
+    const unit = document.createElement("span");
+    unit.className = "unit";
+    unit.textContent = "g";
+    cell.append(input, unit);
+    inputs.push(input);
+  }
+  if (!inputs.length) return;
+
+  let scale = 1;
+  let lastEdited = null;
+
+  const bar = document.createElement("div");
+  bar.className = "scale-bar";
+  const hint = document.createElement("span");
+  hint.className = "hint";
+  hint.textContent = "Edit any amount, then Apply — the rest scales to match.";
+  const applyBtn = document.createElement("button");
+  applyBtn.type = "button";
+  applyBtn.className = "primary";
+  applyBtn.textContent = "Apply";
+  const resetBtn = document.createElement("button");
+  resetBtn.type = "button";
+  resetBtn.textContent = "Reset";
+  const factor = document.createElement("span");
+  factor.className = "factor";
+  bar.append(hint, applyBtn, resetBtn, factor);
+  table.parentNode.insertBefore(bar, table);
+
+  function render() {
+    for (const i of inputs) i.value = fmtGrams(parseFloat(i.dataset.base) * scale);
+    factor.textContent = scale === 1 ? "" : "×" + (Math.round(scale * 1000) / 1000);
+    lastEdited = null;
+  }
+  function apply() {
+    const src = lastEdited
+      || inputs.find(i => Math.abs(parseFloat(i.value) - parseFloat(i.dataset.base) * scale) > 1e-9);
+    if (!src) return;
+    const v = parseFloat(src.value);
+    if (isFinite(v) && v > 0) scale = v / parseFloat(src.dataset.base);
+    render();
+  }
+
+  for (const i of inputs) {
+    i.addEventListener("input", () => { lastEdited = i; });
+    i.addEventListener("keydown", e => {
+      if (e.key === "Enter") { e.preventDefault(); apply(); }
+    });
+  }
+  applyBtn.addEventListener("click", apply);
+  resetBtn.addEventListener("click", () => { scale = 1; render(); });
+}
+
+function enhanceIngredients() {
+  document.querySelectorAll("#content table").forEach(enhanceIngredientTable);
+}
+
 function crumbs(path) {
   const parts = path.split("/");
   let html = `<a href="#/">Home</a>`;
@@ -287,6 +419,7 @@ async function route() {
   try {
     const md = await fetchMarkdown(hash);
     $content.innerHTML = crumbs(hash) + DOMPurify.sanitize(marked.parse(md));
+    enhanceIngredients();
     document.title = pretty(hash.split("/").pop()) + " — Cookbook";
     window.scrollTo(0, 0);
     document.querySelectorAll("#nav a").forEach(a =>

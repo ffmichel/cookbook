@@ -11,7 +11,7 @@
 | Sweetened condensed milk | 189 g |
 | Heavy whipping cream | 146 g |
 | Vanilla extract | 5 g |
-| Salt | Pinch |
+| Salt | 0.5 g |
 | Xanthan gum | 0.5 g |
 
 ### Method
