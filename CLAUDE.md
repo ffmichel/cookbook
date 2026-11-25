@@ -20,6 +20,15 @@ This folder is a recipe cookbook AND a website, published via GitHub Pages.
    ```
    The site updates immediately — no build step.
 
+## Linking between recipes
+
+- Base recipes (a crust, a pastry cream) live in their own file so other recipes can reuse them.
+- Link with a normal markdown link, relative to the current file:
+  - same folder: `[Pâte brisée sucrée](pate_brisee_sucree.md)`
+  - another category: `[Pâte brisée sucrée](../Pastry/pate_brisee_sucree.md)`
+- The site turns relative `.md` links into in-site routes; the same links work when browsing the repo on GitHub.
+- In an ingredient table, put the link in the Ingredient cell and the weight needed in the Amount cell, e.g. `| [Pâte brisée sucrée](../Pastry/pate_brisee_sucree.md) | 385 g |`.
+
 ## Category-specific rules
 
 - `NinjaCreami/CLAUDE.md` has ice-cream preferences (no protein powder, no pudding mix, store-bought style).

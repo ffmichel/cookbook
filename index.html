@@ -394,6 +394,35 @@ function enhanceIngredients() {
   document.querySelectorAll("#content table").forEach(enhanceIngredientTable);
 }
 
+/* ---------- Recipe-to-recipe links ----------
+   A markdown link to another recipe file, written relative to the current
+   recipe (e.g. [Pâte brisée](../Pastry/pate_brisee_sucree.md)), is resolved
+   against the current recipe's folder and turned into a site route. The same
+   link also works when browsing the repo on GitHub. */
+
+function resolveRecipeLink(href, currentPath) {
+  if (!href || href.startsWith("#") || href.startsWith("//")) return null;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(href)) return null;        // http:, mailto:, …
+  let clean = href.split(/[?#]/)[0];
+  try { clean = decodeURIComponent(clean); } catch (e) { /* keep as written */ }
+  if (!/\.md$/i.test(clean)) return null;
+  const stack = clean.startsWith("/") ? [] : currentPath.split("/").slice(0, -1);
+  for (const part of clean.split("/")) {
+    if (!part || part === ".") continue;
+    if (part === "..") stack.pop();
+    else stack.push(part);
+  }
+  return stack.join("/");
+}
+
+function enhanceLinks(currentPath) {
+  for (const a of document.querySelectorAll("#content a[href]")) {
+    if (a.closest(".crumbs")) continue;
+    const target = resolveRecipeLink(a.getAttribute("href"), currentPath);
+    if (target) a.setAttribute("href", "#/" + target);
+  }
+}
+
 function crumbs(path) {
   const parts = path.split("/");
   let html = `<a href="#/">Home</a>`;
@@ -420,6 +449,7 @@ async function route() {
     const md = await fetchMarkdown(hash);
     $content.innerHTML = crumbs(hash) + DOMPurify.sanitize(marked.parse(md));
     enhanceIngredients();
+    enhanceLinks(hash);
     document.title = pretty(hash.split("/").pop()) + " — Cookbook";
     window.scrollTo(0, 0);
     document.querySelectorAll("#nav a").forEach(a =>
