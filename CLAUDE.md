@@ -13,7 +13,7 @@ This folder is a recipe cookbook AND a website, published via GitHub Pages.
 
 1. Add or edit `.md` files in the appropriate category folder (create new folders for new categories).
 2. Filenames: lowercase snake_case, e.g. `chocolate_chip_cookies.md`. The site prettifies them for display.
-3. Each recipe starts with a `# Title` heading; use tables for ingredients (see existing recipes as templates).
+3. Each recipe starts with a `# Title` heading; use tables for ingredients (see existing recipes as templates). Ingredient tables must be `| Ingredient | Amount |` with amounts as `<number> g`, or the site's scaling controls won't attach to them.
 4. Publishing: commit and push to `main` of https://github.com/ffmichel/cookbook (site: https://ffmichel.github.io/cookbook/). The site updates immediately — no build step. See "Publishing from a Claude session" below for how.
 
 ## Before writing a recipe
@@ -28,10 +28,14 @@ This folder is a recipe cookbook AND a website, published via GitHub Pages.
 There are two routes. Use whichever the session has; lacking one of them does not mean the recipe can't be published.
 
 - **Cloud session (claude.ai on the web or phone, no Desktop Commander):** the GitHub connection has push access to this repo. Attach `ffmichel/cookbook` with push access, clone it, commit, and push to `main`. If attaching with push access is refused, tell Fabrice that and ask him to confirm, instead of reporting that publishing is impossible.
-- **Mac session with Desktop Commander:** work in `~/claude/cookbook` (SSH remote, no token needed) and run one command:
+- **Mac session with Desktop Commander:** the clone at `~/claude/cookbook` is already set up (remote `git@github.com:ffmichel/cookbook.git`, SSH auth as ffmichel, shell is /bin/zsh); don't re-clone or re-auth. Publish with ONE `start_process` call:
   ```
   cd ~/claude/cookbook && git pull --rebase && git add -A && git commit -m "Add <recipe>" && git push 2>&1 | tail -5
   ```
+  - Keep the SSH remote. An HTTPS remote hangs waiting for a username and password that can't be typed into a non-interactive process.
+  - Work only inside `~/claude/cookbook`. The commit identity is set repo-locally there and the global git `user.name` is empty, so committing from any other clone on the Mac fails with "Please tell me who you are".
+  - Never run a git command that would open an editor or a prompt; the process hangs with no output.
+  - If a command returns no output, it may still be running: call `read_process_output` with the PID rather than assuming it failed.
 
 In both cases:
 
