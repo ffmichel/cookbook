@@ -14,7 +14,7 @@ This folder is a recipe cookbook AND a website, published via GitHub Pages.
 1. Add or edit `.md` files in the appropriate category folder (create new folders for new categories).
 2. Filenames: lowercase snake_case, e.g. `chocolate_chip_cookies.md`. The site prettifies them for display.
 3. Each recipe starts with a `# Title` heading; use tables for ingredients (see existing recipes as templates). Ingredient tables must be `| Ingredient | Amount |` with amounts as `<number> g`, or the site's scaling controls won't attach to them.
-4. Publishing: commit and push to `main` of https://github.com/ffmichel/cookbook (site: https://ffmichel.github.io/cookbook/). The site updates immediately — no build step. See "Publishing from a Claude session" below for how.
+4. Publishing: commit and push to `main` of https://github.com/ffmichel/cookbook (site: https://ffmichel.github.io/cookbook/). The site updates immediately — no build step. Adding a `.md` file publishes it automatically: the nav is built from the file tree, so there is no index to update. See "Publishing from a Claude session" below for how.
 
 ## Before writing a recipe
 
@@ -28,7 +28,7 @@ This folder is a recipe cookbook AND a website, published via GitHub Pages.
 There are two routes. Use whichever the session has; lacking one of them does not mean the recipe can't be published.
 
 - **Cloud session (claude.ai on the web or phone, no Desktop Commander):** the GitHub connection has push access to this repo. Attach `ffmichel/cookbook` with push access, clone it, commit, and push to `main`. If attaching with push access is refused, tell Fabrice that and ask him to confirm, instead of reporting that publishing is impossible.
-- **Mac session with Desktop Commander:** the clone at `~/claude/cookbook` is already set up (remote `git@github.com:ffmichel/cookbook.git`, SSH auth as ffmichel, shell is /bin/zsh); don't re-clone or re-auth. Publish with ONE `start_process` call:
+- **Mac session with Desktop Commander:** the clone at `~/claude/cookbook` is already set up (remote `git@github.com:ffmichel/cookbook.git`, SSH auth as ffmichel with no token needed, shell is /bin/zsh); don't re-clone or re-auth. Publish with ONE `start_process` call:
   ```
   cd ~/claude/cookbook && git pull --rebase && git add -A && git commit -m "Add <recipe>" && git push 2>&1 | tail -5
   ```
